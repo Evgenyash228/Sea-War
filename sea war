@@ -1,0 +1,373 @@
+from random import randint
+
+
+class korabl:
+    def __init__(self, length, x, y, direction):
+        self.length = length
+        self.x = x
+        self.y = y
+        self.direction = direction
+
+    def dots(self):
+        dots = []
+        for i in range(self.length):
+            # Up
+            if self.direction == '1':
+                dots.append((self.x - i, self.y))
+            # Down
+            elif self.direction == '2':
+                dots.append((self.x + i, self.y))
+            # Left
+            elif self.direction == '3':
+                dots.append((self.x, self.y - i))
+            # Right
+            elif self.direction == '4':
+                dots.append((self.x, self.y + i))
+        return dots
+
+
+class doska:
+    def __init__(self, side):
+        self.board = [['  | 1 | 2 | 3 | 4 | 5 | 6 |'],
+                      ['1 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |'],
+                      ['2 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |'],
+                      ['3 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |'],
+                      ['4 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |'],
+                      ['5 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |'],
+                      ['6 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |']]
+
+        self.enemy_board = [['  | 1 | 2 | 3 | 4 | 5 | 6 |'],
+                            ['1 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |'],
+                            ['2 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |'],
+                            ['3 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |'],
+                            ['4 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |'],
+                            ['5 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |'],
+                            ['6 |', ' O |', ' O |', ' O |', ' O |', ' O |', ' O |']]
+
+        self.alive = 7
+        self.side = side
+
+    def random_board(self, length):
+        global game
+
+        x = randint(1, 6)
+        y = randint(1, 6)
+        direction = str(randint(1, 4))
+        try:
+            dots = korabl(length, x, y, direction).dots()
+            for i in dots:
+                if game.bot.board[i[0]][i[1]] == ' O |':
+                    if i[0] > 0 and i[1] > 0:
+                        game.bot.board[i[0]][i[1]] = ' * |'
+                    else:
+                        return False
+                else:
+                    return False
+            game.bot_ships.append(dots)
+            self.contour(dots)
+            return True
+        except Exception:
+            return False
+
+    def change_alive(self):
+        global game
+
+        if self.side == 'player':
+            return len(game.player_ships)
+        else:
+            return len(game.bot_ships)
+
+    def set_ship(self, length, var):
+        global game
+
+        try:
+            x = int(input('Укажите координаты носа корабля по X'))
+        except Exception:
+            print('Некорректный ввод')
+            return False
+        try:
+            y = int(input('Укажите координаты носа корабля по Y'))
+        except Exception:
+            print('Некоректный ввод')
+            return False
+        if var != 'однопалубник':
+            direction = input('Укажите направление корабля \n'
+                              '(Вверх - 1, вниз - 2, влево - 3, вправо - 4)')
+        else:
+            direction = '1'
+        try:
+            dots = korabl(length, x, y, direction).dots()
+            for i in dots:
+                if i[0] > 0 and i[1] > 0:
+                    game.player.board[i[0]][i[1]] = ' * |'
+                else:
+                    print('Некоректные данные')
+                    return False
+            game.player_ships.append(dots)
+            self.contour(dots)
+            return True
+        except Exception:
+            print('Некоректный ввод')
+            return False
+
+    def contour(self, dots):
+        global game
+
+        for i in dots:
+            try:
+                if self.side == 'player':
+                    if game.player.board[i[0] + 1][i[1]] == ' O |':
+                        game.player.board[i[0] + 1][i[1]] = ' # |'
+                else:
+                    if game.bot.board[i[0] + 1][i[1]] == ' O |':
+                        game.bot.board[i[0] + 1][i[1]] = ' # |'
+            except Exception:
+                pass
+
+            try:
+                if self.side == 'player':
+                    if game.player.board[i[0]][i[1] + 1] == ' O |':
+                        game.player.board[i[0]][i[1] + 1] = ' # |'
+                else:
+                    if game.bot.board[i[0]][i[1] + 1] == ' O |':
+                        game.bot.board[i[0]][i[1] + 1] = ' # |'
+            except Exception:
+                pass
+
+            try:
+                if self.side == 'player':
+                    if game.player.board[i[0] - 1][i[1]] == ' O |':
+                        game.player.board[i[0] - 1][i[1]] = ' # |'
+                else:
+                    if game.bot.board[i[0] - 1][i[1]] == ' O |':
+                        game.bot.board[i[0] - 1][i[1]] = ' # |'
+            except Exception:
+                pass
+
+            try:
+                if self.side == 'player':
+                    if game.player.board[i[0]][i[1] - 1] == ' O |':
+                        game.player.board[i[0]][i[1] - 1] = ' # |'
+                else:
+                    if game.bot.board[i[0]][i[1] - 1] == ' O |':
+                        game.bot.board[i[0]][i[1] - 1] = ' # |'
+            except Exception:
+                pass
+
+            try:
+                if self.side == 'player':
+                    if game.player.board[i[0] + 1][i[1] + 1] == ' O |':
+                        game.player.board[i[0] + 1][i[1] + 1] = ' # |'
+                else:
+                    if game.bot.board[i[0] + 1][i[1] + 1] == ' O |':
+                        game.bot.board[i[0] + 1][i[1] + 1] = ' # |'
+            except Exception:
+                pass
+
+            try:
+                if self.side == 'player':
+                    if game.player.board[i[0] - 1][i[1] - 1] == ' O |':
+                        game.player.board[i[0] - 1][i[1] - 1] = ' # |'
+                else:
+                    if game.bot.board[i[0] - 1][i[1] - 1] == ' O |':
+                        game.bot.board[i[0] - 1][i[1] - 1] = ' # |'
+            except Exception:
+                pass
+
+            try:
+                if self.side == 'player':
+                    if game.player.board[i[0] + 1][i[1] - 1] == ' O |':
+                        game.player.board[i[0] + 1][i[1] - 1] = ' # |'
+                else:
+                    if game.bot.board[i[0] + 1][i[1] - 1] == ' O |':
+                        game.bot.board[i[0] + 1][i[1] - 1] = ' # |'
+            except Exception:
+                pass
+
+            try:
+                if self.side == 'player':
+                    if game.player.board[i[0] - 1][i[1] + 1] == ' O |':
+                        game.player.board[i[0] - 1][i[1] + 1] = ' # |'
+                else:
+                    if game.bot.board[i[0] - 1][i[1] + 1] == ' O |':
+                        game.bot.board[i[0] - 1][i[1] + 1] = ' # |'
+            except Exception:
+                pass
+
+    def shot(self, x, y):
+        global game
+
+        cord = (y, x)
+
+        if self.enemy_board[x][y] == ' O |':
+            if self.side == 'player':
+                if bot.board[x][y] == ' * |':
+                    for i in range(len(game.bot_ships)):
+                        for j in range(len(game.bot_ships[i])):
+                            if game.bot_ships[i][j] == cord:
+                                print(game.bot_ships)
+                                del game.bot_ships[i][j]
+                                game.bot.board[x][y] = ' X |'
+                                break
+                    self.enemy_board[x][y] = ' X |'
+                    game.bot.board[x][y] = ' X |'
+                    print('Вы попали')
+                    return True
+                else:
+                    self.enemy_board[x][y] = ' T |'
+                    game.bot.board[x][y] = ' T |'
+                    print('Вы промахнулись')
+                    return False
+            elif self.side == 'bot':
+                if player.board[x][y] == ' * |':
+                    for i in range(len(game.player_ships)):
+                        for j in range(len(game.player_ships[i])):
+                            if game.player_ships[i][j] == cord:
+                                game.player_ships[i].pop(j)
+                    self.enemy_board[x][y] = ' X |'
+                    game.player.board[x][y] = ' X |'
+                    print('Противник попал')
+                    return True
+                else:
+                    self.enemy_board[x][y] = ' T |'
+                    game.player.board[x][y] = ' T |'
+                    print('Противник промахнулся')
+                    return False
+        else:
+            print('Неверные координаты выстрела!')
+            return True
+
+    def print_board(self):
+        print('Ваша доска:')
+        for i in self.board:
+            print(''.join(i))
+        print('Доска попаданий:')
+        for i in self.enemy_board:
+            print(''.join(i))
+
+
+class Game:
+    def __init__(self, bot_ex, player_ex):
+        self.bot = bot_ex
+        self.player = player_ex
+        self.player_ships = []
+        self.bot_ships = []
+
+    def greet(self):
+        print('*' + '-' * 10 + '*')
+        print('Привет. Вы играете в морской бой.\n'
+              'Для начала вам нужно расставить корабли.\n'
+              'Каждый ход вы должны указывать координаты\n'
+              'вашего выстрела по X и Y.\n'
+              '* - клетка корабля, # - контур корабля\n'
+              'T - промах, X - попадание\n'
+)
+        print('*' + '-' * 10 + '*')
+
+    def loop(self):
+        # Корабли компьютера
+        count = 0
+        while count < 1000:
+            # Трехпалубник
+            res = False
+            while not res:
+                count += 1
+                res = bot.random_board(3)
+
+            # Двухпалубники
+            for i in range(2):
+                res = False
+                while not res:
+                    count += 1
+                    res = bot.random_board(2)
+
+            # Однопалубники
+            for i in range(4):
+                res = False
+                while not res:
+                    count += 1
+                    res = bot.random_board(1)
+            break
+        print(self.bot_ships)
+        print('Для начала выставим корабли')
+        player.print_board()
+
+
+        # Корабли игрока
+
+        # Трехпалубник
+        res = False
+        while not res:
+            print('Трехпаблуник')
+            res = player.set_ship(3, '')
+        player.print_board()
+
+        # Двухпалубники
+        for i in range(2):
+            res = False
+            while not res:
+                print('Двухпалубник')
+                res = player.set_ship(2, '')
+            player.print_board()
+
+        # Однопалубники
+        for i in range(4):
+            res = False
+            while not res:
+                print('Однопалубник')
+                res = player.set_ship(1, 'однопалубник')
+            player.print_board()
+
+        while True:
+            if self.check_win():
+                break
+            print('Новый ход')
+            x = int(input('Укажите координаты выстрела по X'))
+            y = int(input('Укажите координаты выстрела по Y'))
+            res = player.shot(x, y)
+            self.bot_ships = list(filter(None, self.bot_ships))
+            player.print_board()
+            while res:
+                try:
+                    x = int(input('Укажите координаты носа корабля по X'))
+                except Exception:
+                    print('Некорректный ввод')
+                    continue
+                try:
+                    y = int(input('Укажите координаты носа корабля по Y'))
+                except Exception:
+                    print('Некорректный ввод')
+                    continue
+                res = player.shot(x, y)
+                self.bot_ships = list(filter(None, self.bot_ships))
+                player.print_board()
+            bot_x = randint(1, 6)
+            bot_y = randint(1, 6)
+            res = bot.shot(bot_x, bot_y)
+            self.player_ships = list(filter(None, self.player_ships))
+            while res:
+                bot_x = randint(1, 6)
+                bot_y = randint(1, 6)
+                res = bot.shot(bot_x, bot_y)
+                self.player_ships = list(filter(None, self.player_ships))
+
+    def check_win(self):
+        if len(self.player_ships) == 0:
+            print('Победил компьютер!')
+            return True
+        elif len(self.bot_ships) == 0:
+            print('Победили вы!')
+            return True
+        else:
+            return False
+
+    def start(self):
+        self.greet()
+        self.loop()
+
+
+if __name__ == '__main__':
+    bot = doska('bot')
+    player = doska('player')
+    game = Game(bot, player)
+    game.start()
